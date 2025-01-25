@@ -186,3 +186,169 @@ This project demonstrates the integration of Calimero's local computation capabi
    - Mining is efficient
    - UI is responsive
    - Network is stable 
+
+
+
+## Detailed Plan - Days 1-2
+
+### Day 1
+
+#### Dev 1 (Rust/ICP Developer)
+- Set up dfx environment and configure project structure
+- Create initial canister template with basic methods
+- Set up unit testing framework
+- Implement basic data structures for blocks and transactions
+- Create initial state management for the ledger
+- Write basic tests for data structures
+
+**Deliverables**
+- Working ICP development environment
+- Basic canister structure with test coverage
+- Initial data models for blocks and transactions
+
+#### Dev 2 (Calimero Core)
+**Morning**
+- Set up Rust development environment for mining module
+- Design basic PoW algorithm structure
+- Create initial mining module interfaces
+
+**Afternoon**
+- Implement basic SHA-256 based PoW algorithm
+- Create mining state management structure
+- Set up basic benchmarking tools
+
+**Deliverables**
+- Working PoW algorithm implementation
+- Basic mining state management
+- Initial performance metrics
+
+#### Dev 3 (Calimero Integration)
+**Morning**
+- Set up local Calimero node environment
+- Configure basic node settings
+- Create initial proxy structure
+
+**Afternoon**
+- Implement basic node configuration management
+- Set up logging and monitoring
+- Create initial proxy endpoints
+
+**Deliverables**
+- Working Calimero node setup
+- Basic proxy configuration
+- Initial logging system
+
+#### Dev 4 (Frontend)
+**Morning**
+- Set up React/TypeScript project structure
+- Create initial component hierarchy
+- Set up development tools (ESLint, Prettier)
+
+**Afternoon**
+- Implement basic layout components
+- Create placeholder mining dashboard
+- Set up routing structure
+
+**Deliverables**
+- Working frontend development environment
+- Basic UI structure
+- Initial component library
+
+### Day 2
+
+#### Dev 1 (Rust/ICP Developer)
+**Morning**
+- Implement basic block validation logic
+- Create methods for block submission
+- Set up basic balance tracking
+
+**Afternoon**
+- Implement query methods for ledger state
+- Create basic transaction validation
+- Write integration tests
+
+**Deliverables**
+- Working block validation
+- Basic ledger query functionality
+- Integration test suite
+
+#### Dev 2 (Calimero Core)
+**Morning**
+- Implement difficulty adjustment mechanism
+- Create mining job queue
+- Set up worker thread management
+
+**Afternoon**
+- Implement basic mining result validation
+- Create performance monitoring tools
+- Test mining module on single node
+
+**Deliverables**
+- Working difficulty adjustment
+- Basic mining job management
+- Performance monitoring system
+
+#### Dev 3 (Calimero Integration)
+**Morning**
+- Set up basic network configuration
+- Implement initial ICP proxy methods
+- Create state synchronization structure
+
+**Afternoon**
+- Implement basic error handling
+- Create health check endpoints
+- Set up basic metrics collection
+
+**Deliverables**
+- Working network configuration
+- Basic proxy communication
+- Health monitoring system
+
+#### Dev 4 (Frontend)
+**Morning**
+- Create mining control components
+- Implement basic state management
+- Set up API service structure
+
+**Afternoon**
+- Create basic wallet UI components
+- Implement mining statistics display
+- Set up WebSocket connection structure
+
+**Deliverables**
+- Working mining controls
+- Basic wallet interface
+- Initial real-time updates structure
+
+### Integration Points for Days 1-2
+
+1. **End of Day 1**
+- Team sync to ensure all development environments are properly set up
+- Review of initial architectures and interfaces
+- Alignment on communication protocols between components
+
+2. **End of Day 2**
+- Integration test of basic mining functionality
+- Review of API endpoints and interfaces
+- Verification of development progress against MVP requirements
+
+### Success Metrics for Days 1-2
+
+1. **Technical Setup**
+- All development environments are properly configured
+- Basic components are implemented and tested individually
+- Initial interfaces are defined and documented
+
+2. **Team Coordination**
+- Clear understanding of integration points
+- Established communication protocols
+- Defined API contracts between components
+
+3. **Progress Tracking**
+- All basic components are implemented
+- Initial integration points are tested
+- Development is on track for core features
+
+## Integration Points
+
+// ... existing code ...
