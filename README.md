@@ -1,1 +1,3 @@
-# calimero_x_icp_hackathon
+# Calimero X ICP Hackathon
+
+Miro Board: https://miro.com/app/board/uXjVLp9KCPg=/
