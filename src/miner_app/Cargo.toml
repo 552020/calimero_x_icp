@@ -11,7 +11,7 @@ rapidhash = "1.2.0"
 
 #We will use SHA-128 to let more miners mine on classic desktop machines
 #Provides the SHA-256 hashing algorithm, which is crucial for blockchain mining. 
-#sha2 = "0.10"
+sha2 = "0.10"
 
 #This crate is used for generating random numbers, used to create a "nonce"
 rand = "0.8"
@@ -37,3 +37,6 @@ serde_json = "1.0"
 # miner. The `features = ["full"]` option includes all of Tokio's modules, giving you the flexibility 
 # to use async tasks for network communication, file handling, etc.
 tokio = {version = "1", features = ["full"]}
+
+# Enable the hex crate for encoding/decoding
+hex = "0.4"

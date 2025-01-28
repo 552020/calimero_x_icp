@@ -27,7 +27,25 @@ impl Block {
 
     pub fn calculate_hash(&self) -> String {
         let mut hasher = Sha256::new();
-        hasher.update(format!("{:?}", self));
+
+        // Include transaction details explicitly in the hash calculation
+        let transactions_data = self
+            .transactions
+            .iter()
+            .map(|tx| {
+                format!(
+                    "sender: {}, recipient: {}, amount: {}",
+                    tx.sender, tx.recipient, tx.amount
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        hasher.update(format!(
+            "nonce: {}, transactions: [{}], previous_hash: {}, difficulty: {}",
+            self.nonce, transactions_data, self.previous_hash, self.difficulty
+        ));
+
         let result = hasher.finalize();
         hex::encode(result)
     }

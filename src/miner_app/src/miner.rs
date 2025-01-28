@@ -39,7 +39,8 @@ where
 }
 
 pub fn send_block_for_verification(block: &Block) -> bool {
+    // Simulate sending the block for verification and receiving a response
     println!("Sending block for verification: {:?}", block);
-    // TODO: complete
+    // Here you would implement the actual verification logic
     true // Simulating a successful verification
 }
