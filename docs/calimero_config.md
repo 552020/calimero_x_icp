@@ -3,6 +3,7 @@
 The Calimero node configuration file (`config.toml`) is structured into several sections, each controlling different aspects of the node's behavior.
 
 ## Core Identity
+
 ```toml
 [identity]
 peer_id = "12D3KooW..."     # Unique identifier for the node in the P2P network
@@ -12,17 +13,19 @@ keypair = "23jhTdUD..."     # Node's cryptographic keypair for secure communicat
 ## Network Configuration
 
 ### P2P Network (Swarm)
+
 ```toml
 [swarm]
 listen = [
-    "/ip4/0.0.0.0/tcp/2528",         # IPv4 TCP listener
-    "/ip4/0.0.0.0/udp/2528/quic-v1", # IPv4 QUIC listener
-    "/ip6/::/tcp/2528",              # IPv6 TCP listener
-    "/ip6/::/udp/2528/quic-v1"       # IPv6 QUIC listener
+    "/ip4/0.0.0.0/tcp/2528",         # TCP transport
+    "/ip4/0.0.0.0/udp/2528/quic-v1", # QUIC transport
+    "/ip6/::/tcp/2528",              # IPv6 TCP
+    "/ip6/::/udp/2528/quic-v1"       # IPv6 QUIC
 ]
 ```
 
 ### API Server
+
 ```toml
 [server]
 listen = [
@@ -43,6 +46,7 @@ enabled = true                        # Enable WebSocket connections
 ## Network Discovery
 
 ### Bootstrap Nodes
+
 ```toml
 [bootstrap]
 nodes = [                            # Initial nodes for network connection
@@ -52,6 +56,7 @@ nodes = [                            # Initial nodes for network connection
 ```
 
 ### Discovery Settings
+
 ```toml
 [discovery]
 mdns = true                          # Enable local network discovery
@@ -70,6 +75,7 @@ registrations_limit = 3              # Max relay registrations
 ```
 
 ## Synchronization and Storage
+
 ```toml
 [sync]
 timeout_ms = 30000                   # Sync timeout in milliseconds
@@ -85,6 +91,7 @@ path = "blobs"                       # Path for blob storage
 ## Context Configuration
 
 ### Default Context Settings
+
 ```toml
 [context.config.new]
 protocol = "icp"                     # Default protocol for new contexts
@@ -101,6 +108,7 @@ url = "http://3.125.79.112:63529/"  # Relayer service URL
 ### Chain-Specific Configurations
 
 #### NEAR Configuration
+
 ```toml
 [context.config.signer.self.near.mainnet]
 rpc_url = "https://rpc.mainnet.near.org/"
@@ -113,6 +121,7 @@ secret_key = "ed25519:3FNE..."      # Private key for signing
 ```
 
 #### StarkNet Configuration
+
 ```toml
 [context.config.signer.self.starknet.mainnet]
 rpc_url = "https://cloud.argent-api.com/v1/starknet/mainnet/rpc/v0.7"
@@ -125,6 +134,7 @@ secret_key = "0x2652..."            # Private key for signing
 ```
 
 #### Internet Computer Configuration
+
 ```toml
 [context.config.signer.self.icp.ic]
 rpc_url = "https://ic0.app/"
@@ -139,14 +149,17 @@ secret_key = "df39a..."             # Private key for signing
 ## Security Notes
 
 ⚠️ **Important**: This configuration file contains sensitive information:
+
 - Private keys for various networks
 - Account credentials
 - RPC endpoints
 
 It should be:
+
 - Kept secure and not shared
 - Backed up safely
 - Access restricted to authorized users only
 
 ## File Location
+
 Default location: `~/.calimero/node1/config.toml`
