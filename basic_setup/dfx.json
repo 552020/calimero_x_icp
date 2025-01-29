@@ -11,6 +11,12 @@
         "package": "external_contract",
         "type": "rust",
         "optimize": "cycles"
+      },
+      "context_contract": {
+        "candid": "src/context_contract/context_contract.did",
+        "package": "context_contract",
+        "type": "rust",
+        "optimize": "cycles"
       }
     },
     "defaults": {
