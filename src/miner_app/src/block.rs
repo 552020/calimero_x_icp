@@ -1,4 +1,3 @@
-// src/miner_app/block.rs
 use crate::transaction::Transaction;
 use sha2::{Digest, Sha256};
 
