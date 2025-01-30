@@ -10,10 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 calimero-sdk = {git = "https://github.com/calimero-network/core"}
 calimero-storage = {git = "https://github.com/calimero-network/core"}
-# calimero-sdk = "0.1.0"
-# calimero-storage = "0.1.0"
 candid = "0.10"
-ic-cdk = "0.16"
 serde = "1.0.209"
 
 [profile.app-release]
