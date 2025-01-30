@@ -2,7 +2,48 @@
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
 RESET='\033[0m'
+
+echo -e "${BLUE}Checking if dfx is already running...${RESET}"
+
+# Check if dfx is already running on port 4943
+if lsof -i :4943 &>/dev/null; then
+    echo -e "${YELLOW}dfx is already running on port 4943. Stopping existing instance...${RESET}"
+    dfx stop
+    sleep 1
+else
+    echo -e "${GREEN}dfx is not running. Proceeding...${RESET}"
+fi
+
+echo -e "${BLUE}Starting dfx in the background...${RESET}"
+dfx start --background
+
+# Wait a bit to ensure dfx starts properly
+sleep 5
+
+echo -e "${BLUE}Checking if 'default' identity already exists...${RESET}"
+if ! dfx identity list | grep -q "^default$"; then
+    echo -e "${YELLOW}Creating 'default' identity...${RESET}"
+    dfx identity new default
+else
+    echo -e "${GREEN}'default' identity already exists.${RESET}"
+fi
+
+echo -e "${BLUE}Switching to 'default' identity...${RESET}"
+dfx identity use default
+
+echo -e "${GREEN}Setup complete!${RESET}"
+
+
+
+
+USER=$(whoami)
+echo -e "${GREEN}Deleting node1, node2 and node3 from ~/.calimero${RESET}"
+rm -rf /Users/${USER}/.calimero/node1
+rm -rf /Users/${USER}/.calimero/node2
+rm -rf /Users/${USER}/.calimero/node3
 
 echo -e "${GREEN}Compiling context, proxy, and external canister...${RESET}"
 bash context/build.sh
@@ -16,12 +57,7 @@ if [ $? -ne 0 ]; then
   dfx start --clean --background
 fi
 
-# Create context canister
-dfx canister id context > /dev/null
-if [ $? -ne 0 ]; then
-  echo -e "${GREEN}Creating context canister...${RESET}"
-  dfx canister create context
-fi
+
 # dfx canister call context hello > /dev/null 2>&1
 # if [ $? -ne 0 ]; then
 #   echo -e "${GREEN}Uploading WASM for context canister...${RESET}"
@@ -33,9 +69,6 @@ fi
 #   fi
 # fi
 
-# Fetch context canister ID and echo
-CONTEXT_CANISTER_ID=$(dfx canister id context)
-echo -e "${GREEN}Context Canister ID: ${CONTEXT_CANISTER_ID}${RESET}"
 
 # Create proxy canister
 dfx canister id proxy_contract > /dev/null
@@ -81,7 +114,6 @@ echo -e "${GREEN}External Canister ID: ${EXTERNAL_CANISTER_ID}${RESET}"
 
 # Save to .env file
 echo -e "${GREEN}Saving canister IDs to .env file...${RESET}"
-echo "CONTEXT_CANISTER_ID=${CONTEXT_CANISTER_ID}" > .env
 echo "PROXY_CANISTER_ID=${PROXY_CANISTER_ID}" >> .env
 echo "EXTERNAL_CANISTER_ID=${EXTERNAL_CANISTER_ID}" >> .env
 
