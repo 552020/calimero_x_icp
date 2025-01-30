@@ -29,11 +29,15 @@ if [ $? -ne 0 ] ; then
   dfx canister install proxy_contract --mode=install --wasm ./proxy_contract/res/proxy_contract.wasm
 
   dfx canister call proxy_contract cycles_left > /dev/null 2>&1
-    if [ $? -ne 0 ] ; then
-        echo -e "${RED}ERROR: could not reach proxy canister.${RESET}"
-        exit 1
-    fi
+  if [ $? -ne 0 ] ; then
+    echo -e "${RED}ERROR: could not reach proxy canister.${RESET}"
+    exit 1
+  fi
 fi
+
+# Fetch proxy canister ID and echo
+PROXY_CANISTER_ID=$(dfx canister id proxy_contract)
+echo -e "${GREEN}Proxy Canister ID: ${PROXY_CANISTER_ID}${RESET}"
 
 # Create external canister
 dfx canister id external_contract > /dev/null
@@ -48,17 +52,19 @@ if [ $? -ne 0 ] ; then
   dfx canister install external_contract --mode=install --wasm ./external_contract/res/external_contract.wasm
 
   dfx canister call external_contract hello > /dev/null 2>&1
-    if [ $? -ne 0 ] ; then
-        echo -e "${RED}ERROR: could not reach external canister.${RESET}"
-        exit 1
-    fi
+  if [ $? -ne 0 ] ; then
+    echo -e "${RED}ERROR: could not reach external canister.${RESET}"
+    exit 1
+  fi
 fi
 
+# Fetch external canister ID and echo
+EXTERNAL_CANISTER_ID=$(dfx canister id external_contract)
+echo -e "${GREEN}External Canister ID: ${EXTERNAL_CANISTER_ID}${RESET}"
+
+# Save to .env file
+echo -e "${GREEN}Saving canister IDs to .env file...${RESET}"
+echo "PROXY_CANISTER_ID=${PROXY_CANISTER_ID}" > .env
+echo "EXTERNAL_CANISTER_ID=${EXTERNAL_CANISTER_ID}" >> .env
+
 echo -e "${GREEN}Installation done! Starting node${RESET}"
-
-# TODO: start the node and install the context
-
-# merod --node-name node1 init --server-port 2430 --swarm-port 2530
-# merod --node-name node2 init --server-port 2431 --swarm-port 2531
-# merod --node-name node1 run
-# application install file ./context/res/context.wasm
