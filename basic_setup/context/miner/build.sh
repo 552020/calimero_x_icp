@@ -16,10 +16,10 @@ cargo build --target wasm32-unknown-unknown --profile app-release
 mkdir -p res
 
 # Copy the wasm binary to the res directory
-cp $TARGET/wasm32-unknown-unknown/app-release/kv_store.wasm ./res/
+cp $TARGET/wasm32-unknown-unknown/app-release/miner.wasm ./res/
 
 # Optimize the wasm binary to reduce its size
 if command -v wasm-opt > /dev/null; then
-  wasm-opt -Oz ./res/kv_store.wasm -o ./res/kv_store.wasm
+  wasm-opt -Oz ./res/kv_store.wasm -o ./res/miner.wasm
 fi
 
