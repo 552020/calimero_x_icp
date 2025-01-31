@@ -1,5 +1,5 @@
 [package]
-name = "miner"
+name = "mining_pool"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,10 +7,10 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+instant = "0.1"
 sha2 = "0.10"
 calimero-sdk = { git = "https://github.com/calimero-network/core" }
 calimero-storage = { git = "https://github.com/calimero-network/core" }
-
 
 [profile.app-release]
 inherits = "release"

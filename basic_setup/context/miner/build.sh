@@ -20,6 +20,6 @@ cp $TARGET/wasm32-unknown-unknown/app-release/miner.wasm ./res/
 
 # Optimize the wasm binary to reduce its size
 if command -v wasm-opt > /dev/null; then
-  wasm-opt -Oz ./res/kv_store.wasm -o ./res/miner.wasm
+  wasm-opt -Oz ./res/miner.wasm -o ./res/miner.wasm
 fi
 
