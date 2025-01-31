@@ -1,16 +1,33 @@
 // In miner.rs
 use crate::block::Block;
 use crate::transaction::Transaction;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, BufReader};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BlockchainData {
+    pub difficulty: u32,
+    pub chain: Vec<Block>,
+    pub pending_transactions: Vec<Transaction>,
+}
+
+impl BlockchainData {
+    /// Reads the blockchain data from a JSON file.
+    pub fn from_file<P: AsRef<Path>>(filename: P) -> io::Result<Self> {
+        let file = File::open(filename)?;
+        let reader = BufReader::new(file);
+        let data = serde_json::from_reader(reader)?;
+        Ok(data)
+    }
+}
 
 pub struct Miner {
     pub blocks_mined: u32,
-    mining: bool,
+    pub mining: bool,
 }
 
 impl Miner {
@@ -22,32 +39,51 @@ impl Miner {
     }
 
     /// Starts the mining process on a new thread.
-    /// This function consumes an Arc<Mutex<Miner>> so that the mining thread owns it.
+    /// Reads the blockchain data from file to get the last block.
     pub fn start_mining_thread(
         miner: Arc<Mutex<Self>>,
         file_path: String,
     ) -> thread::JoinHandle<()> {
         // Clone the file_path into an Arc so that it can be moved into the thread.
-        let file_path = Arc::new(file_path);
+        let file_path_arc = Arc::new(file_path);
 
         thread::spawn({
-            // Clone the Arc to be moved into the closure.
             let miner = Arc::clone(&miner);
-            let file_path = Arc::clone(&file_path);
+            let file_path_arc = Arc::clone(&file_path_arc);
             move || {
+                // Read the blockchain data once to get the last block
+                let blockchain_data = match BlockchainData::from_file(&*file_path_arc) {
+                    Ok(data) => data,
+                    Err(e) => {
+                        eprintln!("Error reading blockchain data: {}", e);
+                        return;
+                    }
+                };
+
+                let difficulty = blockchain_data.difficulty;
+                let last_block = blockchain_data.chain.last().cloned();
+
+                // Use the last block’s hash if available; otherwise use a default.
+                let previous_hash = match last_block {
+                    Some(block) => block.calculate_hash(),
+                    None => "0".repeat(64),
+                };
+
                 {
-                    // Set mining to true
                     let mut m = miner.lock().unwrap();
                     m.mining = true;
                 }
+
                 while {
                     let m = miner.lock().unwrap();
                     m.mining
                 } {
-                    // Use the free function instead of a method on self to avoid lifetime issues.
-                    let (difficulty, transactions) = read_data_from_file(&file_path);
-                    let previous_hash = "0".repeat(64);
-                    let mut block = Block::new(0, transactions, previous_hash, difficulty);
+                    // In a real blockchain you’d likely update the pending transactions from a mempool.
+                    // For our example, we use the pending transactions loaded from the file.
+                    let pending_transactions = blockchain_data.pending_transactions.clone();
+
+                    let mut block =
+                        Block::new(0, pending_transactions, previous_hash.clone(), difficulty);
                     block.mine();
                     println!("Mined block: {:?}", block);
 
@@ -55,7 +91,6 @@ impl Miner {
                         let mut m = miner.lock().unwrap();
                         m.blocks_mined += 1;
                     }
-                    thread::sleep(Duration::from_secs(1));
                 }
             }
         })
@@ -69,42 +104,7 @@ impl Miner {
 
     pub fn verify_initial_block(&self, block: &Block) -> bool {
         let hash = block.calculate_hash();
-        let difficulty_str = "0".repeat(block.difficulty as usize);
-        hash.starts_with(&difficulty_str)
+        let target = "0".repeat(block.difficulty as usize);
+        hash.starts_with(&target)
     }
-}
-
-// Free function version remains the same.
-pub fn read_data_from_file(file_path: &str) -> (u32, Vec<Transaction>) {
-    let mut difficulty = 0;
-    let mut transactions = Vec::new();
-
-    if let Ok(lines) = read_lines(file_path) {
-        for (i, line) in lines.enumerate() {
-            if let Ok(data) = line {
-                if i == 0 {
-                    difficulty = data.parse().unwrap_or(0);
-                } else {
-                    let parts: Vec<&str> = data.split(',').collect();
-                    if parts.len() == 3 {
-                        transactions.push(Transaction {
-                            sender: parts[0].to_string(),
-                            recipient: parts[1].to_string(),
-                            amount: parts[2].parse().unwrap_or(0),
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    (difficulty, transactions)
-}
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }

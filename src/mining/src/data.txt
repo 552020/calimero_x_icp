@@ -1,3 +1,3 @@
-4
+10
 Alice,Bob,50
 Charlie,Dave,30

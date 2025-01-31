@@ -1,12 +1,14 @@
+// block.rs
 use crate::transaction::Transaction;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Block {
-    nonce: u64,
-    transactions: Vec<Transaction>,
-    previous_hash: String,
-    pub difficulty: u32, //pub so access from miner.rs
+    pub nonce: u64,
+    pub transactions: Vec<Transaction>,
+    pub previous_hash: String,
+    pub difficulty: u32,
 }
 
 impl Block {
@@ -26,8 +28,6 @@ impl Block {
 
     pub fn calculate_hash(&self) -> String {
         let mut hasher = Sha256::new();
-
-        // Include transaction details explicitly in the hash calculation
         let transactions_data = self
             .transactions
             .iter()
@@ -50,13 +50,8 @@ impl Block {
     }
 
     pub fn mine(&mut self) {
-        while self
-            .calculate_hash()
-            .chars()
-            .take(self.difficulty as usize)
-            .collect::<String>()
-            != "0".repeat(self.difficulty as usize)
-        {
+        let target_prefix = "0".repeat(self.difficulty as usize);
+        while !self.calculate_hash().starts_with(&target_prefix) {
             self.nonce += 1;
         }
     }

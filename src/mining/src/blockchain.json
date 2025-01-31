@@ -1,0 +1,18 @@
+{
+	"difficulty": 4,
+	"chain": [
+	  {
+		"nonce": 0,
+		"transactions": [
+		  { "sender": "genesis", "recipient": "Alice", "amount": 50 }
+		],
+		"previous_hash": "0",
+		"difficulty": 4
+	  }
+	],
+	"pending_transactions": [
+	  { "sender": "Alice", "recipient": "Bob", "amount": 10 },
+	  { "sender": "Bob", "recipient": "Charlie", "amount": 5 }
+	]
+  }
+  
