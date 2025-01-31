@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "mining"
+version = "0.1.0"
+
+[dependencies]
+hex = "0.4" # Add the hex crate for encoding
+sha2 = "0.10" # Add the sha2 crate for hashing
+
+[profile.app-release]
+inherits = "release" # Inherit settings from the default release profile
+opt-level = 3 # Optimization level for release builds
