@@ -6,7 +6,7 @@ pub struct Block {
     nonce: u64,
     transactions: Vec<Transaction>,
     previous_hash: String,
-    difficulty: u32,
+    pub difficulty: u32, //pub so access from miner.rs
 }
 
 impl Block {
