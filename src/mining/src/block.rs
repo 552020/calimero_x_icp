@@ -1,5 +1,6 @@
 // block.rs
 use crate::transaction::Transaction;
+use calimero_sdk::app;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -9,6 +10,11 @@ pub struct Block {
     pub transactions: Vec<Transaction>,
     pub previous_hash: String,
     pub difficulty: u32,
+}
+
+#[app::event]
+pub enum MyEvent<'a> {
+    BlockMined { block_hash: &'a str },
 }
 
 impl Block {
@@ -54,5 +60,9 @@ impl Block {
         while !self.calculate_hash().starts_with(&target_prefix) {
             self.nonce += 1;
         }
+        // Emit an event when a block is mined
+        app::emit!(MyEvent::BlockMined {
+            block_hash: &self.calculate_hash()
+        });
     }
 }

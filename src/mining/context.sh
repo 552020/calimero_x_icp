@@ -26,6 +26,7 @@ chmod +x ./build.sh
 ./build.sh
 
 echo "Installing application..."
+echo "meroctl --node-name node1 app install -p ./res/mining.wasm"
 full_output=$(meroctl --node-name node1 app install -p ./res/mining.wasm)
 echo "Full command output:"
 echo "$full_output"

@@ -1,6 +1,8 @@
 // In miner.rs
 use crate::block::Block;
 use crate::transaction::Transaction;
+use crate::AppState;
+use calimero_sdk::app;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, BufReader};
@@ -63,7 +65,7 @@ impl Miner {
                 let difficulty = blockchain_data.difficulty;
                 let last_block = blockchain_data.chain.last().cloned();
 
-                // Use the last block’s hash if available; otherwise use a default.
+                // Use the last block's hash if available; otherwise use a default.
                 let previous_hash = match last_block {
                     Some(block) => block.calculate_hash(),
                     None => "0".repeat(64),
@@ -78,7 +80,7 @@ impl Miner {
                     let m = miner.lock().unwrap();
                     m.mining
                 } {
-                    // In a real blockchain you’d likely update the pending transactions from a mempool.
+                    // In a real blockchain you'd likely update the pending transactions from a mempool.
                     // For our example, we use the pending transactions loaded from the file.
                     let pending_transactions = blockchain_data.pending_transactions.clone();
 
@@ -107,4 +109,9 @@ impl Miner {
         let target = "0".repeat(block.difficulty as usize);
         hash.starts_with(&target)
     }
+}
+
+#[app::logic]
+impl AppState {
+    // ... existing methods ...
 }
