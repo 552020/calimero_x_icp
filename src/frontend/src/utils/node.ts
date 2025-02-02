@@ -1,4 +1,7 @@
-import { getNodeUrlFromLocalStorage } from "./storage";
+import {
+  getApplicationIdFromLocalStorage,
+  getNodeUrlFromLocalStorage,
+} from "./storage";
 
 export const getNodeUrl = (): string => {
   // Get from environment variables
@@ -13,4 +16,13 @@ export const getNodeUrl = (): string => {
   }
 
   return nodeUrl;
+};
+
+export const getApplicationId = (): string | null => {
+  const applicationId = getApplicationIdFromLocalStorage();
+  if (!applicationId) {
+    const applicationIdFromEnv = import.meta.env.VITE_APPLICATION_ID;
+    return applicationIdFromEnv;
+  }
+  return applicationId;
 };
