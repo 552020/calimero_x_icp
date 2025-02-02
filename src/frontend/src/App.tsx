@@ -2,7 +2,7 @@
 import { AccessTokenWrapper } from "@calimero-network/calimero-client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SetupPage from "./routes/SetupPage";
-import AuthenticationPage from "./routes/LoginPage";
+import LoginPage from "./routes/LoginPage";
 import HomePage from "./routes/HomePage";
 
 import { getNodeUrl } from "./utils/node";
@@ -13,7 +13,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SetupPage />} />
-          <Route path="/auth" element={<AuthenticationPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/home" element={<HomePage />} />
         </Routes>
       </BrowserRouter>
