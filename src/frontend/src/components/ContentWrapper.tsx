@@ -5,7 +5,7 @@ interface ContentWrapperProps {
   children: React.ReactNode;
 }
 
-const ContentWrapper = ({ children }: ContentWrapperProps) => {
+export const ContentWrapper = ({ children }: ContentWrapperProps) => {
   return (
     <div className="h-screen w-full bg-gray-900">
       {/* Navigation Bar */}
