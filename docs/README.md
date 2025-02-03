@@ -1,6 +1,8 @@
 
 
-### [Calimero X ICP Hackathon Entry](https://calimero.network/)  
+### [BILLO, Calimero X ICP Hackathon Entry](https://calimero.network/)  
+
+<img width="864" alt="Screenshot 2025-02-04 at 00 02 09" src="https://github.com/user-attachments/assets/1b4209e3-728f-4570-899f-b18e0220d470" />
 
 The **SLAD team** decided to look back in the past and use the best future technology to bring the next Play to earn Blockchain technology to the masses.
 
@@ -33,3 +35,9 @@ The **Calimero Network** is a decentralized framework designed for building **se
 - [Anton ("the tailor")](https://github.com/AntonSplavnik)  
 
 BILLO is here to bring back the joy of mining—powered by the best of past and future technology! 🚀
+
+
+<img width="866" alt="Screenshot 2025-02-04 at 00 02 21" src="https://github.com/user-attachments/assets/36a70c94-1dcc-4416-a444-a288312ff6a4" />
+
+
+
