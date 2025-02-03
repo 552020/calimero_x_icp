@@ -18,7 +18,7 @@ mkdir -p res
 # Copy the wasm binary to the res directory
 cp $TARGET/wasm32-unknown-unknown/app-release/kv_store.wasm ./res/
 
-# Optimize the wasm binary to reduce its size
+Optimize the wasm binary to reduce its size
 if command -v wasm-opt > /dev/null; then
   wasm-opt -Oz ./res/kv_store.wasm -o ./res/kv_store.wasm
 fi
