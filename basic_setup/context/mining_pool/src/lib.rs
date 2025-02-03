@@ -21,7 +21,6 @@
 *    meroctl --node-name manager call --as <EXECUTOR_ID> <CONTEXT_ID> get_miner_rewards --args '{"miner_id": "miner"}'
 */
 
-
 use calimero_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use calimero_sdk::types::Error;
 use calimero_sdk::{app, env};
