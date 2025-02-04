@@ -41,3 +41,39 @@ BILLO is here to bring back the joy of mining—powered by the best of past and 
 
 
 
+## Build & Start
+
+### Setup & Build  
+Ensure dependencies are installed, then run:
+
+```sh
+make setup
+```
+
+This checks prerequisites, builds the node application WASM, and sets up the ICP devnet.
+
+### Start Development  
+To deploy the mining contract and start development:
+
+```sh
+make dev
+```
+
+### Clean Up  
+Stop services and remove temporary files:
+
+```sh
+make clean
+```
+
+## Available Commands
+
+- `make check-prerequisites` – Verify required dependencies.  
+- `make setup` – Set up the environment and build the project.  
+- `make build-node-app-wasm` – Build the node application WebAssembly.  
+- `make deploy-mining` – Deploy the mining contract.  
+- `make dev` – Start the development environment.  
+- `make clean` – Stop services and clean up temporary files.  
+- `make help` – Display available commands.
+
+
