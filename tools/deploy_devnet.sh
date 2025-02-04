@@ -116,19 +116,42 @@ stop_all_dfx() {
     echo "Stopping all dfx processes..."
     dfx stop || true
     
+    # Kill any process using dfx port 4943
+    local max_attempts=5
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        if lsof -ti:4943 >/dev/null 2>&1; then
+            echo "Attempt $attempt: Found process using dfx port 4943, killing it..."
+            lsof -ti:4943 | xargs kill -9
+            echo "Waiting for port to be released..."
+            sleep 3  # Increased sleep time to allow proper cleanup
+        else
+            echo "Port 4943 is free"
+            break
+        fi
+        
+        attempt=$((attempt + 1))
+        
+        if [ $attempt -gt $max_attempts ]; then
+            echo "Failed to free port 4943 after $max_attempts attempts. Please try again in a few moments."
+            exit 1
+        fi
+    done
+    
     # Try pgrep first (preferred method)
     if command -v pgrep >/dev/null 2>&1; then
         while pgrep -f "[d]fx" > /dev/null; do
             echo "Waiting for dfx processes to stop..."
             pkill -f "[d]fx" || true
-            sleep 1
+            sleep 2
         done
     else
         # Fallback to ps aux if pgrep is not available
         while ps aux | grep "[d]fx" > /dev/null; do
             echo "Waiting for dfx processes to stop..."
             ps aux | grep "[d]fx" | awk '{print $2}' | xargs kill -9 2>/dev/null || true
-            sleep 1
+            sleep 2
         done
     fi
     echo "All dfx processes stopped"
@@ -237,20 +260,20 @@ CONTEXT_ID=$(dfx canister id context_contract)
 LEDGER_ID=$(dfx canister id ledger)
 
 # Prepare ledger initialization argument
-LEDGER_INIT_ARG="(variant { Init = record { 
-    minting_account = \"${MINTING_ACCOUNT}\"; 
-    initial_values = vec { 
-        record { \"${INITIAL_ACCOUNT}\"; record { e8s = 100_000_000_000 } } 
-    }; 
-    send_whitelist = vec {}; 
-    transfer_fee = opt record { e8s = 10_000 }; 
-    token_symbol = opt \"LICP\"; 
-    token_name = opt \"Local Internet Computer Protocol Token\"; 
-    archive_options = opt record { 
-        trigger_threshold = 2000; 
-        num_blocks_to_archive = 1000; 
-        controller_id = principal \"${ARCHIVE_PRINCIPAL}\" 
-    }; 
+LEDGER_INIT_ARG="(variant { Init = record { \
+    minting_account = \"${MINTING_ACCOUNT}\"; \
+    initial_values = vec { \
+        record { \"${INITIAL_ACCOUNT}\"; record { e8s = 100_000_000_000 } } \
+    }; \
+    send_whitelist = vec {}; \
+    transfer_fee = opt record { e8s = 10_000 }; \
+    token_symbol = opt \"LICP\"; \
+    token_name = opt \"Local Internet Computer Protocol Token\"; \
+    archive_options = opt record { \
+        trigger_threshold = 2000; \
+        num_blocks_to_archive = 1000; \
+        controller_id = principal \"${ARCHIVE_PRINCIPAL}\" \
+    } \
 } })"
 
 # Build and install canisters

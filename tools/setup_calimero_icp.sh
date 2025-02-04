@@ -6,17 +6,9 @@ set -e
 # Simple protocol definition
 PROTOCOL="icp"
 OUTPUT_FILE=".env"
-CALIMERO_APP_WASM_PATH="../src/backend/src/hello_app.wasm"
 
-
-# Navigate to logic directory and build
-echo "Building logic..."
-cd $CALIMERO_APP_WASM_PATH
-chmod +x ./build.sh
-./build.sh
-
-echo "Installing application..."
-full_output=$(meroctl --node-name node1 app install -p ./res/blockchain.wasm)
+echo "Installing application into the node ..."
+full_output=$(meroctl --node-name node1 app install -p ../src/backend/src/res/hello_app.wasm)
 echo "Full command output:"
 echo "$full_output"
 

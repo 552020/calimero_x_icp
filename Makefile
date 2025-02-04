@@ -5,7 +5,8 @@ DFX_VERSION=0.24.3
 CARGO_VERSION=1.81.0
 CANDID_EXTRACTOR_VERSION=0.1.5
 PNPM_VERSION=9.6.0
-CALIMERO_APP_WASM_PATH=../src/backend/src/hello_app.wasm
+CALIMERO_APP_WASM_PATH=./src/backend/res/hello_app.wasm
+CALIMERO_APP_BUILD_PATH=./src/backend/
 
 # Control flags for each package
 # Set DISABLE to 1 to skip the check
@@ -23,6 +24,13 @@ PNPM_EXACT_VERSION=0
 NODE_NAME=default
 SERVER_PORT=2428
 SWARM_PORT=2528
+
+# Complete setup process
+all: check-prerequisites setup-icp-devnet init-calimero-nodes
+	@echo "✓ Complete setup process finished successfully!"
+	@echo "ICP devnet is running"
+	@echo "Calimero nodes are initialized and running"
+	@echo "Configuration saved in .env file"
 
 # Check if cargo is installed and has correct version
 check-cargo:
@@ -128,11 +136,12 @@ check-prerequisites: check-dfx check-cargo check-candid-extractor check-pnpm
 
 # Build node application WASM
 build-node-app-wasm:
-	@echo "Building node application WASM..."
-	@cd $(dir $(CALIMERO_APP_WASM_PATH)) && \
-		chmod +x ./build.sh && \
-		./build.sh
-	@echo "✓ Node application WASM built successfully"
+	@echo "Building node application WASM..." && \
+	echo "Printing working directory: $(shell pwd)" && \
+	cd $(CALIMERO_APP_BUILD_PATH) && \
+	chmod +x ./build.sh && \
+	./build.sh && \
+	echo "✓ Node application WASM built successfully"
 
 # Setup ICP devnet environment
 setup-icp-devnet: check-prerequisites build-node-app-wasm
@@ -140,14 +149,11 @@ setup-icp-devnet: check-prerequisites build-node-app-wasm
 	@./tools/deploy_devnet.sh
 	@echo "✓ ICP devnet environment setup completed"
 
-setup: setup-icp-devnet init-calimero-nodes build-node-app-wasm
-
 # Initialize and run Calimero nodes
 init-calimero-nodes:
 	@echo "Initializing Calimero nodes..."
 	@./tools/init_and_run_nodes.sh
 	@echo "✓ Calimero nodes initialized and running"
-
 
 # Clean up
 clean:
@@ -156,19 +162,15 @@ clean:
 	rm -rf .dfx
 	rm -rf canister_ids.json
 
-# Development setup
-dev: deploy-mining
-	@echo "Development environment ready!"
-
 # Help
 help:
 	@echo "Calimero x ICP PoW Mining Project Makefile"
 	@echo ""
 	@echo "Available commands:"
-	@echo "  make setup        - Set up ICP environment (auto-detects fresh/addon)"
-	@echo "  make deploy-mining- Deploy mining contract (includes setup)"
+	@echo "  make all          - Complete setup process"
+	@echo "  make setup-icp-devnet - Set up ICP environment"
+	@echo "  make init-calimero-nodes - Initialize and run Calimero nodes"
 	@echo "  make clean        - Clean up environment"
-	@echo "  make dev          - Complete development setup"
 	@echo "  make help         - Show this help message"
 
-.PHONY: check-dfx check-cargo check-candid-extractor check-pnpm check-prerequisites setup-icp-devnet init-calimero-nodes build-node-app-wasm setup deploy-mining clean dev help 
+.PHONY: check-dfx check-cargo check-candid-extractor check-pnpm check-prerequisites setup-icp-devnet init-calimero-nodes build-node-app-wasm clean help all 
