@@ -5,6 +5,7 @@ DFX_VERSION=0.24.3
 CARGO_VERSION=1.81.0
 CANDID_EXTRACTOR_VERSION=0.1.5
 PNPM_VERSION=9.6.0
+CALIMERO_APP_WASM_PATH=../src/backend/src/hello_app.wasm
 
 # Control flags for each package
 # Set DISABLE to 1 to skip the check
@@ -125,25 +126,28 @@ check-dfx:
 check-prerequisites: check-dfx check-cargo check-candid-extractor check-pnpm
 	@echo "✓ All prerequisites checked successfully"
 
-# Deploy ICP devnet
-deploy-icp-devnet: check-prerequisites
-	@echo "Starting ICP devnet deployment..."
-	@./tools/deploy_devnet.sh
-	@echo "✓ ICP devnet deployment completed"
+# Build node application WASM
+build-node-app-wasm:
+	@echo "Building node application WASM..."
+	@cd $(dir $(CALIMERO_APP_WASM_PATH)) && \
+		chmod +x ./build.sh && \
+		./build.sh
+	@echo "✓ Node application WASM built successfully"
 
 # Setup ICP devnet environment
-setup-icp-devnet: deploy-icp-devnet
-	@echo "ICP devnet environment setup completed"
+setup-icp-devnet: check-prerequisites build-node-app-wasm
+	@echo "Starting ICP devnet deployment..."
+	@./tools/deploy_devnet.sh
+	@echo "✓ ICP devnet environment setup completed"
 
-# Update setup to use setup-icp-devnet
-setup: setup-icp-devnet
+setup: setup-icp-devnet init-calimero-nodes build-node-app-wasm
 
-# Deploy mining contract (requires working dfx environment)
-deploy-mining: setup
-	@echo "Deploying mining contract..."
-	dfx deploy mining_contract
-	@echo "Initializing mining parameters..."
-	dfx canister call mining_contract init_mining '(record { initial_difficulty = 100; reward_amount = 50 })'
+# Initialize and run Calimero nodes
+init-calimero-nodes:
+	@echo "Initializing Calimero nodes..."
+	@./tools/init_and_run_nodes.sh
+	@echo "✓ Calimero nodes initialized and running"
+
 
 # Clean up
 clean:
@@ -167,4 +171,4 @@ help:
 	@echo "  make dev          - Complete development setup"
 	@echo "  make help         - Show this help message"
 
-.PHONY: check-dfx check-cargo check-candid-extractor check-pnpm check-prerequisites deploy-icp-devnet setup-icp-devnet setup deploy-mining clean dev help 
+.PHONY: check-dfx check-cargo check-candid-extractor check-pnpm check-prerequisites setup-icp-devnet init-calimero-nodes build-node-app-wasm setup deploy-mining clean dev help 
