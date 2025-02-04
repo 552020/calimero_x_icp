@@ -32,4 +32,4 @@ yarn-error.log*
 coverage/
 
 # Ignore all files in the exp directory
-exp/*
+exp/lib_old_ver.rs
