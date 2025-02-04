@@ -30,3 +30,6 @@ yarn-error.log*
 
 # Testing
 coverage/
+
+# Ignore all files in the exp directory
+exp/*
