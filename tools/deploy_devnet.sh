@@ -2,7 +2,8 @@
 set -e
 
 # Set DFX version
-dfxvm default 0.24.3
+DFX_VERSION='0.24.3'
+dfxvm default ${DFX_VERSION}
 
 # Function to update env file
 update_env_file() {
@@ -67,18 +68,40 @@ check_identity_exists() {
 # Function to handle identity creation and setup
 setup_identities() {
     local is_fresh=$1
-
-	dfxvm default 0.24.3
     
     echo "Setting up identities..."
     
-    # Create required identities if they don't exist
+    # Set DFX version first
+    echo "Setting dfx version to ${DFX_VERSION}..."
+    dfxvm default ${DFX_VERSION}
+    
+    # Create default identity if it doesn't exist
+    if ! check_identity_exists "default"; then
+        echo "Creating default identity..."
+        DEFAULT_OUTPUT=$(dfx identity new default --storage-mode=plaintext 2>&1)
+        DEFAULT_SEED_PHRASE=$(capture_seed_phrase "$DEFAULT_OUTPUT")
+        echo "Default identity created and seed phrase saved"
+    fi
+    
+    # Create required identities
     for identity in "minting" "initial" "archive"; do
         if ! check_identity_exists "$identity"; then
-            echo "Creating $identity identity..."
-            dfx identity new "$identity" --storage-mode=plaintext
+            echo " *Creating ${identity} identity..."
+            IDENTITY_OUTPUT=$(dfx identity new "$identity" --storage-mode=plaintext 2>&1)
+            case "$identity" in
+                "minting")
+                    MINTING_SEED_PHRASE=$(capture_seed_phrase "$IDENTITY_OUTPUT")
+                    ;;
+                "initial")
+                    INITIAL_SEED_PHRASE=$(capture_seed_phrase "$IDENTITY_OUTPUT")
+                    ;;
+                "archive")
+                    ARCHIVE_SEED_PHRASE=$(capture_seed_phrase "$IDENTITY_OUTPUT")
+                    ;;
+            esac
+            echo "Identity '${identity}' created and seed phrase saved"
         else
-            echo "Identity '$identity' already exists, skipping creation..."
+            echo "Identity '${identity}' already exists, skipping creation..."
         fi
     done
     
@@ -86,14 +109,17 @@ setup_identities() {
     if [ $is_fresh -eq 0 ]; then
         if ! check_identity_exists "recipient"; then
             echo "Creating recipient identity..."
-            dfx identity new recipient --storage-mode=plaintext
+            RECIPIENT_OUTPUT=$(dfx identity new recipient --storage-mode=plaintext 2>&1)
+            RECIPIENT_SEED_PHRASE=$(capture_seed_phrase "$RECIPIENT_OUTPUT")
+            echo "Recipient identity created and seed phrase saved"
         else
             echo "Identity 'recipient' already exists, skipping creation..."
         fi
         dfx identity use recipient
         RECIPIENT_PRINCIPAL=$(dfx identity get-principal)
     fi
-	    # Get principals and accounts
+    
+    # Get principals and accounts
     dfx identity use minting
     MINTING_PRINCIPAL=$(dfx identity get-principal)
     MINTING_ACCOUNT=$(get_account_id "$MINTING_PRINCIPAL")
@@ -194,7 +220,11 @@ ask_deployment_mode() {
     done
 }
 
-
+# Helper function to extract seed phrase
+capture_seed_phrase() {
+    local output=$1
+    echo "$output" | grep "seed phrase:" | cut -d':' -f2- | xargs
+}
 
 # Ask for deployment mode
 ask_deployment_mode

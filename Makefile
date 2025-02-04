@@ -155,6 +155,16 @@ init-calimero-nodes:
 	@./tools/init_and_run_nodes.sh
 	@echo "✓ Calimero nodes initialized and running"
 
+# Start Calimero nodes
+start-calimero:
+	@if tmux has-session -t calimero_nodes 2>/dev/null; then \
+		echo "Tmux session already exists. Killing it..."; \
+		tmux kill-session -t calimero_nodes; \
+	fi
+	@tmux new-session -d -s calimero_nodes -n "script"
+	@tmux send-keys -t calimero_nodes:script "cd $(shell pwd) && clear && bash tools/init_and_run_nodes.sh" C-m
+	@tmux attach -t calimero_nodes
+
 # Clean up
 clean:
 	@echo "Cleaning up..."
