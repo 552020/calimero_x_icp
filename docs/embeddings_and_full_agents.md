@@ -117,3 +117,20 @@ For our use case, we are not training models but using pre-trained ones for embe
 - **Decentralization still matters**: While Llama.cpp emphasizes full offline execution, ONNX Runtime allows for broader WASM and browser-based scenarios, making it lighter and more versatile for certain decentralized setups.
 
 Regardless of the framework, we are focused on running pre-trained models efficiently rather than building new ones from scratch.
+
+---
+
+### 6 **Running E5 Locally or in a Calimero Node**
+
+**E5**
+
+- **What It Is**: A family of text embedding models optimized for retrieval and search tasks, developed by Microsoft.
+- **Usage**:
+  - Typically runs using PyTorch or TensorFlow.
+  - Can be converted to ONNX for optimized inference in WASM environments like Calimero.
+- **Key Advantage**: Provides high-quality embeddings, optimized for retrieval-augmented generation (RAG), making it ideal for search and ranking tasks.
+- **Limitations**: Requires conversion to ONNX to run efficiently in decentralized WASM environments.
+
+- **E5 in the Picture**: E5 is a strong choice for embedding creation due to its high-quality retrieval optimization. However, since it is not natively WASM-compatible, it needs to be converted to ONNX for execution in Calimero nodes. To run E5 locally, it can be executed using PyTorch or TensorFlow on a standard machine with a Python environment. However, since Calimero nodes operate in a WASM runtime, E5 must be converted to ONNX to run efficiently. The converted ONNX model can then be deployed inside a Calimero node and executed using ONNX Runtime for WASM, ensuring lightweight and efficient embedding generation in a decentralized network. Compared to SentenceTransformers, it provides **better search and ranking performance**, making it ideal for **retrieval-augmented generation (RAG)** scenarios in decentralized AI agents.
+
+To run E5 locally, it can be executed using **PyTorch or TensorFlow** on a standard machine with a Python environment. However, since **Calimero nodes operate in a WASM runtime**, E5 must be **converted to ONNX** to run efficiently. The converted ONNX model can then be deployed inside a Calimero node and executed using **ONNX Runtime for WASM**, ensuring lightweight and efficient embedding generation in a decentralized network.
