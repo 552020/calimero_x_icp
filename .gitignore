@@ -33,3 +33,6 @@ coverage/
 
 # Ignore all files in the exp directory
 exp/lib_old_ver.rs
+
+target/
+.dfx/
