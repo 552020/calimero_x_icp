@@ -20,5 +20,3 @@ For more information about Calimero Network, visit:
 
 - [Calimero Network](https://calimero.network/)
 - [ICP Devnet Repository](https://github.com/calimero-network/icp-devnet)
-
-tiny changes
