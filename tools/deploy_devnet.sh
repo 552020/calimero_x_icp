@@ -207,11 +207,13 @@ ask_deployment_mode() {
         case $choice in
             1)
                 echo "Starting fresh deployment..."
+				echo "0"
                 return 0
                 ;;
             2)
                 echo "Starting addon deployment..."
-                return 1
+				echo "1"	
+                return 0
                 ;;
             *)
                 echo "Invalid choice. Please enter 1 or 2."
@@ -228,7 +230,10 @@ capture_seed_phrase() {
 
 # Ask for deployment mode
 ask_deployment_mode
+echo "Just before FRESH_DEPLOY"
 FRESH_DEPLOY=$?
+
+echo "FRESH_DEPLOY: $FRESH_DEPLOY"
 
 if [ $FRESH_DEPLOY -eq 0 ]; then
 	stop_all_dfx
@@ -256,9 +261,18 @@ setup_identities $FRESH_DEPLOY
 if [ $FRESH_DEPLOY -eq 0 ]; then
     dfx start --clean --background
 else
-    dfx start --background || true
+    echo "Attempting to start dfx in addon mode..."
+    dfx stop || true
+    sleep 2
+    if ! dfx start --background; then
+        echo "Failed to start dfx in addon mode"
+        echo "Checking if dfx is already running..."
+        if ! dfx ping; then
+            echo "DFX is not responding. Please check dfx status manually."
+            exit 1
+        fi
+    fi
 fi
-
 # NOTE: Previously in fresh deployment, 'default' identity was used.
 # We now consistently use 'initial' identity for both modes as it's
 # the one that receives the initial tokens and is more appropriate
