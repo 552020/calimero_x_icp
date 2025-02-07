@@ -6,10 +6,10 @@ use calimero_storage::collections::UnorderedMap;
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 #[borsh(crate = "calimero_sdk::borsh")]
 pub struct File {
-    id: u64,
-    owner: String,
-    filename: String,
-    content: Vec<u8>,
+    pub id: u64,
+    pub owner: String,
+    pub filename: String,
+    pub content: Vec<u8>,
 }
 
 // App Events
@@ -32,7 +32,7 @@ pub enum FileEvent<'a> {
 #[derive(BorshSerialize, BorshDeserialize)]
 #[borsh(crate = "calimero_sdk::borsh")]
 pub struct FileExchangeApp {
-    files: UnorderedMap<Vec<u8>, File>, // Use Vec<u8> as the key
+    files: UnorderedMap<Vec<u8>, File>,
     next_file_id: u64,
 }
 
@@ -59,8 +59,8 @@ impl FileExchangeApp {
             content,
         };
 
-        let key = file_id.to_le_bytes().to_vec(); // Convert u64 to Vec<u8>
-        self.files.insert(key.clone(), file).expect("Storage error");
+        let key = file_id.to_le_bytes().to_vec();
+        self.files.insert(key, file).expect("Storage error");
         self.next_file_id += 1;
 
         app::emit!(FileEvent::FileUploaded {
@@ -74,12 +74,12 @@ impl FileExchangeApp {
 
     // Exchange a file
     pub fn exchange_file(&mut self, file_id: u64, new_owner: String) -> bool {
-        let key = file_id.to_le_bytes().to_vec(); // Convert u64 to Vec<u8>
+        let key = file_id.to_le_bytes().to_vec();
         if let Some(mut file) = self.files.get(&key).expect("Storage error") {
             let old_owner = file.owner.clone();
             file.owner = new_owner.clone();
-
-            self.files.insert(key.clone(), file).expect("Storage error");
+            
+            self.files.insert(key, file).expect("Storage error");
 
             app::emit!(FileEvent::FileExchanged {
                 file_id,
@@ -95,13 +95,7 @@ impl FileExchangeApp {
 
     // Get file details
     pub fn get_file(&self, file_id: u64) -> Option<File> {
-        let key = file_id.to_le_bytes().to_vec(); // Convert u64 to Vec<u8>
+        let key = file_id.to_le_bytes().to_vec();
         self.files.get(&key).expect("Storage error")
     }
-}
-
-#[derive(Debug)]
-pub enum FileError {
-    NotFound,
-    StorageError,
 }
