@@ -38,3 +38,5 @@ coverage/
 # ignore python virtual environment
 .venv/
 /venv/
+**/.venv/
+**/venv/
