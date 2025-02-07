@@ -10,7 +10,7 @@ fn create_test_user() -> (User, SigningKey) {
     
     let user = User {
         peer_id: "test-peer-id".to_string(),
-        public_key: Repr::new(verifying_key),
+        public_key: Repr::<VerifyingKey, Raw>::from(verifying_key),
         name: Some("Test User".to_string()),
     };
 
@@ -46,7 +46,7 @@ fn test_file_upload() {
     let file_id = result.unwrap();
     
     // Verify the file exists in storage
-    let stored_file = app.files.get(&file_id).expect("File should exist");
+    let stored_file = app.files.get(&file_id).expect("Storage error").expect("File should exist");
     assert_eq!(stored_file.filename, filename);
     assert_eq!(stored_file.owner.peer_id, user.peer_id);
 }

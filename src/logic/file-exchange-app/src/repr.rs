@@ -50,20 +50,20 @@ impl<T> Repr<T> {
 
 impl<T: ReprBytes> BorshSerialize for Repr<T, Raw> {
     fn serialize<W: io::Write>(&self, writer: &mut W) -> Result<(), io::Error> {
-        self.data.to_bytes().serialize(writer)
+        let bytes = self.data.to_bytes();
+        writer.write_all(bytes.as_ref())?;
+        Ok(())
     }
 }
 
 impl<T: ReprBytes> BorshDeserialize for Repr<T, Raw> {
     fn deserialize_reader<R: io::Read>(reader: &mut R) -> io::Result<Self> {
-        let bytes = T::Bytes::deserialize_reader(reader)?;
-        let data = match T::from_bytes(|data| {
-            *data = bytes;
+        let mut bytes = vec![0u8; std::mem::size_of::<<T as ReprBytes>::Bytes>()];
+        reader.read_exact(&mut bytes)?;
+        let data = T::from_bytes(|data| {
+            data.copy_from_slice(&bytes);
             None::<()>
-        }) {
-            Some(data) => unsafe { data.unwrap_unchecked() },
-            None => return Err(io::ErrorKind::InvalidData.into()),
-        };
+        }).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Invalid data"))??;
         Ok(Repr::from(data))
     }
 }

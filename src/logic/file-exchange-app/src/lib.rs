@@ -124,7 +124,7 @@ impl FileExchangeApp {
         filename: String, 
         content: Vec<u8>,
         peer_id: String,
-        public_key: Repr<VerifyingKey>,
+        public_key: Repr<VerifyingKey, Raw>,
         signature: Signature
     ) -> Result<u64, FileError> {
         // Verify the signature matches the public key
@@ -146,7 +146,7 @@ impl FileExchangeApp {
             content,
         };
 
-        self.files.insert(&file_id, file);
+        self.files.insert(file_id, file).expect("Storage error");
         self.next_file_id += 1;
 
         app::emit!(FileEvent::FileUploaded {
@@ -167,29 +167,24 @@ impl FileExchangeApp {
     /// # Returns
     /// * `Result<(), FileError>` - Returns Ok(()) if the exchange is successful, or an error if it fails.
     pub fn exchange_file(&mut self, file_id: u64, recipient: String) -> Result<(), FileError> {
-        let caller_address = env::caller();
+        let mut file = self.files.get(&file_id)
+            .expect("Storage error")
+            .ok_or(FileError::NotFound)?;
         
-        // Get the file or return NotFound error
-        let mut file = self.files.get(&file_id).ok_or(FileError::NotFound)?;
-        
-        // Check if caller is the owner
-        if file.owner.address != caller_address {
-            return Err(FileError::NotAuthorized);
-        }
-
         // Create new user for recipient
         let new_owner = User {
-            address: recipient.clone(),
+            peer_id: recipient.clone(),  // Changed from address
+            public_key: file.owner.public_key.clone(),  // Keep the same public key
             name: None,
         };
 
         // Update file ownership
         file.owner = new_owner;
-        self.files.insert(&file_id, file);
+        self.files.insert(file_id, file).expect("Storage error");
 
         app::emit!(FileEvent::FileExchanged {
             file_id,
-            from: &caller_address,
+            from: &file.owner.peer_id,
             to: &recipient,
         });
 
@@ -204,11 +199,20 @@ impl FileExchangeApp {
     /// # Returns
     /// * `Option<File>` - Returns the file if it exists.
     pub fn get_file(&self, file_id: u64) -> Option<File> {
-        self.files.get(&file_id)
+        self.files.get(&file_id).expect("Storage error")
     }
 }
 
 fn verify_signature(public_key: &Repr<VerifyingKey>, signature: &Signature) -> bool {
     // Implementation needed
     true  // Temporary return for compilation
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct FileId(u64);
+
+impl AsRef<[u8]> for FileId {
+    fn as_ref(&self) -> &[u8] {
+        unsafe { std::slice::from_raw_parts(&self.0 as *const u64 as *const u8, std::mem::size_of::<u64>()) }
+    }
 }
