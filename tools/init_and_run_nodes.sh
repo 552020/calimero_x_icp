@@ -302,9 +302,21 @@ check_tmux
 check_ports
 check_node_dirs
 
+echo "Current tmux sessions before starting nodes:"
+tmux ls || echo "No tmux sessions exist"
+
+# Create the initial tmux session if using tmux
+if [ "$USE_TMUX" -eq 1 ]; then
+    echo "Creating new tmux session: ${SESSION_NAME}"
+    tmux new-session -d -s ${SESSION_NAME} -n "script"
+    echo "Session created. Current sessions:"
+    tmux ls
+fi
+
 # Run nodes only if using tmux
 if [ "$USE_TMUX" -eq 1 ]; then
     echo "Starting nodes in tmux windows..."
+    echo "SESSION_NAME is: ${SESSION_NAME}"
     run_nodes
 else
     echo "Starting nodes in separate terminal windows..."

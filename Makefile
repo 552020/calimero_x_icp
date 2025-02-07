@@ -157,6 +157,7 @@ init-calimero-nodes:
 
 # Start Calimero nodes
 start-calimero:
+	@echo "Starting start-calimero rule"
 	@if tmux has-session -t calimero_nodes 2>/dev/null; then \
 		echo "Tmux session already exists. Killing it..."; \
 		tmux kill-session -t calimero_nodes; \
