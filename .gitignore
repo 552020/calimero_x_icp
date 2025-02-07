@@ -36,3 +36,4 @@ exp/lib_old_ver.rs
 
 target/
 .dfx/
+.vercel
