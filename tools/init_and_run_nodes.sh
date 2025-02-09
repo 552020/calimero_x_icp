@@ -1,12 +1,27 @@
 #!/bin/bash
+set -e
+
+# Configuration
+APPLICATION_WASM_PATH="./src/backend/res/hello_app.wasm"
+SESSION_NAME="calimero_nodes"
+base_dir="$HOME/.calimero"
+USE_TMUX=1
+
+# Global variables for context and keys
+member_public_key=""
+context_id=""
+app_id=""
+
+# Global variables for node keys
+node2_public_key=""
+node2_private_key=""
+node3_public_key=""
+node3_private_key=""
 
 # Define node names and their respective ports
 nodes=("node1" "node2" "node3")
 server_ports=(2427 2428 2429)
 swarm_ports=(2527 2528 2529)
-
-# Base directory for Calimero nodes
-base_dir="$HOME/.calimero"
 
 save_configuration() {
     local app_id=$1
@@ -47,19 +62,30 @@ generate_invitation_payloads() {
     local context_id=$1
     local member_public_key=$2
     
-    echo "Generating invitation payloads..."
+    echo "DEBUG: Starting generate_invitation_payloads" >&2
+    echo "DEBUG: context_id: $context_id" >&2
+    echo "DEBUG: member_public_key: $member_public_key" >&2
+    
     for i in {1..2}; do
-        echo "Generating invitation payload for ${nodes[$i]}..."
-        node_output=$(meroctl --node-name ${nodes[$i]} identity generate)
-        node_public_key=$(echo "$node_output" | grep "public_key:" | awk '{print $2}')
+        echo "DEBUG: Processing node index $i (${nodes[$i]})" >&2
+        
+        # Debug print the stored public key
+        echo "DEBUG: Looking for node$((i+1))_public_key" >&2
+        eval "node_public_key=\$node$((i+1))_public_key"
+        echo "DEBUG: Retrieved public key: $node_public_key" >&2
+        
+        echo "Generating invitation payload for ${nodes[$i]}..." >&2
+        
+        if [ -z "$node_public_key" ]; then
+            echo "ERROR: Empty public key for ${nodes[$i]}" >&2
+            continue
+        fi
         
         invitation_payload=$(meroctl --node-name ${nodes[0]} --output-format json context invite "$context_id" "$member_public_key" "$node_public_key")
-        echo "Invitation payload for ${nodes[$i]} generated:"
-        echo "$invitation_payload"
+        echo "DEBUG: Generated payload: $invitation_payload" >&2
         
-        # Store the payload and public key for later use
-        eval "node${i}_public_key=$node_public_key"
-        eval "node${i}_payload=$invitation_payload"
+        # Save the invitation payload for later use
+        eval "node${i}_payload=\$invitation_payload"
     done
 }
 
@@ -67,61 +93,75 @@ generate_invitation_payloads() {
 invite_nodes() {
     local context_id=$1
     
-    echo "Inviting nodes to join..."
+    echo "DEBUG: Starting invite_nodes" >&2
+    echo "DEBUG: context_id: $context_id" >&2
+    
     for i in {1..2}; do
-        echo "Inviting ${nodes[$i]} to join..."
-        node_output=$(meroctl --node-name ${nodes[$i]} identity generate)
-        node_private_key=$(echo "$node_output" | grep "private_key:" | awk '{print $2}')
+        echo "DEBUG: Processing node index $i (${nodes[$i]})" >&2
         
-        # Get the encoded invitation from the stored payload
+        # Debug print the stored private key
+        echo "DEBUG: Looking for node$((i+1))_private_key" >&2
+        eval "node_private_key=\$node$((i+1))_private_key"
+        echo "DEBUG: Retrieved private key: $node_private_key" >&2
+        
         eval "payload=\$node${i}_payload"
-        encoded_invitation=$(echo "$payload" | jq -r '.data')
+        echo "DEBUG: Retrieved payload: $payload" >&2
         
-        # Join the context
+        encoded_invitation=$(echo "$payload" | grep -o '"data":"[^"]*"' | cut -d'"' -f4)
+        echo "DEBUG: Encoded invitation: $encoded_invitation" >&2
+        
         join_output=$(meroctl --node-name ${nodes[$i]} context join "$node_private_key" "$encoded_invitation")
-        echo "${nodes[$i]} join output:"
-        echo "$join_output"
+        echo "${nodes[$i]} join output:" >&2
+        echo "$join_output" >&2
     done
 }
 
 # Function to install the application
+# It is necessary to redirect the output to stderr to avoid it being captured by the caller
 install_application() {
-    echo "Installing application on ${nodes[0]}..."
-    full_output=$(meroctl --node-name ${nodes[0]} app install -p ./res/blockchain.wasm)
-    echo "Full command output:"
-    echo "$full_output"
+    echo "Installing application on ${nodes[0]}..." >&2
+    echo "pwd: $(pwd)" >&2
+    echo "APPLICATION_WASM_PATH: $APPLICATION_WASM_PATH" >&2
+    full_output=$(meroctl --node-name ${nodes[0]} app install -p "$APPLICATION_WASM_PATH")
+    echo "Full command output:" >&2
+    echo "$full_output" >&2
 
-    # Extract the ID
-    app_id=$(echo "$full_output" | grep "id:" | awk '{print $2}')
-    echo "Application installed successfully!"
-    echo "Application ID: $app_id"
-    
-    echo "$app_id"  # Return app_id
+    # Extract the ID - be more precise with the extraction
+    app_id=$(echo "$full_output" | grep "^id:" | awk '{print $2}' | tr -d '\n\r')
+    echo "Application installed successfully!" >&2
+    echo "Application ID: $app_id" >&2
+    # Return the app_id on stdout
+    echo "$app_id"
 }
 
 # Function to create context
 create_context() {
-    local app_id=$1
-    echo "Creating context..."
-    context_output=$(meroctl --node-name ${nodes[0]} context create --application-id "$app_id" --protocol "icp")
-    echo "Context creation output:"
-    echo "$context_output"
+    local input_app_id=$1
+    echo "Creating context..." >&2
+    context_output=$(meroctl --node-name ${nodes[0]} context create --application-id "$input_app_id" --protocol "icp")
+    echo "Context creation output:" >&2
+    echo "$context_output" >&2
 
-    # Extract context ID and public key
-    context_id=$(echo "$context_output" | grep "id:" | awk '{print $2}')
-    member_public_key=$(echo "$context_output" | grep "member_public_key:" | awk '{print $2}')
-    
-    echo "$context_id"  # Return context_id
+    # Set global variables
+    context_id=$(echo "$context_output" | grep "^id:" | awk '{print $2}' | tr -d '\n\r')
+    member_public_key=$(echo "$context_output" | grep "^member_public_key:" | awk '{print $2}' | tr -d '\n\r')
 }
 
 # Function to create identities for other nodes
 create_identities() {
     for i in {1..2}; do
-        echo "Generating ${nodes[$i]} identity..."
-        node_output=$(meroctl --node-name ${nodes[$i]} identity generate)
-        node_public_key=$(echo "$node_output" | grep "public_key:" | awk '{print $2}')
-        node_private_key=$(echo "$node_output" | grep "private_key:" | awk '{print $2}')
-        echo "${nodes[$i]} public key: $node_public_key"
+        echo "DEBUG: Creating identity for node index $i (${nodes[$i]})" >&2
+        node_output=$(meroctl --node-name "${nodes[$i]}" identity generate)
+        
+        # Store into node2_public_key for i=1 and node3_public_key for i=2
+        eval "node$((i+1))_public_key=\$(echo \"$node_output\" | grep \"public_key:\" | awk '{print \$2}')"
+        eval "node$((i+1))_private_key=\$(echo \"$node_output\" | grep \"private_key:\" | awk '{print \$2}')"
+        
+        # Debug prints
+        echo "DEBUG: For ${nodes[$i]}:" >&2
+        echo "DEBUG: Stored in node$((i+1))_public_key: $(eval echo \$node$((i+1))_public_key)" >&2
+        echo "DEBUG: Stored in node$((i+1))_private_key: $(eval echo \$node$((i+1))_private_key)" >&2
+        echo "---" >&2
     done
 }
 
@@ -197,16 +237,16 @@ check_node_dirs() {
 
 # Function to initialize a node
 initialize_node() {
-    node=$1
-    index=$(echo "${nodes[@]}" | tr ' ' '\n' | grep -n "^$node$" | cut -d: -f1)
-    server_port=${server_ports[$((index - 1))]}
-    swarm_port=${swarm_ports[$((index - 1))]}
+    local node=$1
+    local index=$(echo "${nodes[@]}" | tr ' ' '\n' | grep -n "^$node$" | cut -d: -f1)
+    local server_port=${server_ports[$((index - 1))]}
+    local swarm_port=${swarm_ports[$((index - 1))]}
 
     echo "Initializing $node on server port $server_port and swarm port $swarm_port."
     mkdir -p "$base_dir/$node"  # Ensure the directory exists
     
     if [ "$USE_TMUX" -eq 1 ]; then
-        tmux send-keys -t my_session "merod --node-name $node init --server-port $server_port --swarm-port $swarm_port" C-m
+        tmux send-keys -t ${SESSION_NAME}:script "merod --node-name $node init --server-port $server_port --swarm-port $swarm_port" C-m
     else
         # For non-tmux, just run the init command directly
         merod --node-name $node init --server-port $server_port --swarm-port $swarm_port
@@ -216,7 +256,7 @@ initialize_node() {
 # Function to run nodes
 run_nodes() {
     if [ "$USE_TMUX" -eq 1 ]; then
-        # Tmux version
+        # Setup nodes in separate windows
         for node in "${nodes[@]}"; do
             node_dir="$base_dir/$node"
             if [ ! -d "$node_dir" ]; then
@@ -225,9 +265,14 @@ run_nodes() {
             fi
 
             echo "Starting $node in a new tmux window..."
-            tmux new-window -t my_session -n "$node"
-            tmux send-keys -t my_session:"$node" "merod --node-name $node run" C-m
+            tmux new-window -t ${SESSION_NAME} -n "$node"
+            tmux send-keys -t ${SESSION_NAME}:"$node" "cd \"$node_dir\" && merod --node-name $node run" C-m
         done
+        
+        # Switch back to script window
+        tmux select-window -t ${SESSION_NAME}:script
+        
+        echo "Nodes are running in other windows. Use Ctrl-b n/p to switch between windows"
     else
         # Non-tmux version - open new terminal windows
         for node in "${nodes[@]}"; do
@@ -257,17 +302,62 @@ check_tmux
 check_ports
 check_node_dirs
 
+echo "Current tmux sessions before starting nodes:"
+tmux ls || echo "No tmux sessions exist"
+
+# Create the initial tmux session if using tmux
 if [ "$USE_TMUX" -eq 1 ]; then
-    # Start tmux session only if using tmux
-    tmux new-session -d -s my_session
+    echo "Creating new tmux session: ${SESSION_NAME}"
+    tmux new-session -d -s ${SESSION_NAME} -n "script"
+    echo "Session created. Current sessions:"
+    tmux ls
 fi
 
-run_nodes
+# Run nodes only if using tmux
+if [ "$USE_TMUX" -eq 1 ]; then
+    echo "Starting nodes in tmux windows..."
+    echo "SESSION_NAME is: ${SESSION_NAME}"
+    run_nodes
+else
+    echo "Starting nodes in separate terminal windows..."
+    run_nodes
+fi
+
+# Add delay to ensure nodes are ready
+echo "Waiting for nodes to initialize..."
+sleep 3  # Wait 10 seconds for nodes to start up
 
 # After nodes are running, setup the application
+echo "Checking if node1 is ready..."
+max_retries=5
+retry_count=0
+while ! curl -s http://127.0.0.1:2427/health > /dev/null; do
+    if [ $retry_count -ge $max_retries ]; then
+        echo "Error: Node1 failed to start after $max_retries attempts"
+        exit 1
+    fi
+    echo "Node1 not ready yet, waiting..."
+    sleep 5
+    retry_count=$((retry_count + 1))
+done
+
+echo "Nodes are ready, proceeding with application setup..."
+
+# After nodes are running, setup the application
+echo "Starting application installation..."
 app_id=$(install_application)
-context_id=$(create_context "$app_id")
+echo "Application ID: $app_id"
+
+# Simply call create_context without capturing its output
+create_context "$app_id"
+echo "Context ID: $context_id"
+echo "Member Public Key: $member_public_key"
+
+
+# **Call create_identities to generate keys for node2 and node3**
 create_identities
+
+# Now both global variables are properly set
 generate_invitation_payloads "$context_id" "$member_public_key"
 invite_nodes "$context_id"
 

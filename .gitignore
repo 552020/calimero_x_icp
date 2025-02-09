@@ -37,3 +37,12 @@ exp/lib_old_ver.rs
 target/
 .dfx/
 .vercel
+
+# ignore ONNX models
+*.onnx
+
+# ignore python virtual environment
+.venv/
+/venv/
+**/.venv/
+**/venv/
